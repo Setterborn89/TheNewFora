@@ -67,7 +67,8 @@
     private async Task FetchList()
     {
         userInterestList = new();
-        userInterestList = await UserInterestManager.GetAllUserInterestsByIdAsync(currentUser.Id);
+        userInterestList.AddRange(currentUser.UserInterests);
+        if(userInterestList is null){ userInterestList = new(); }
         userInterestDtoList = new();
         foreach(var item in userInterestList)
         {

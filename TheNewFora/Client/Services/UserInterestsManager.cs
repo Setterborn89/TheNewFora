@@ -1,4 +1,6 @@
-﻿using TheNewFora.Shared;
+﻿using System.Text;
+using System.Text.Json;
+using TheNewFora.Shared;
 
 namespace TheNewFora.Client.Services
 {
@@ -44,7 +46,12 @@ namespace TheNewFora.Client.Services
         }
         public async Task<string> DeleteUserInterestAsync(UserInterestModel userInterest)
         {
-            HttpResponseMessage response = await _client.DeleteAsync($"api/userinterests/{userInterest.Id}");
+            var httpMessage = new HttpRequestMessage(HttpMethod.Delete, "api/userinterests/")
+            {
+                Content = new StringContent(JsonSerializer.Serialize(userInterest), Encoding.UTF8, "application/json")
+            };
+            var response = await _client.SendAsync(httpMessage);
+
             return response.IsSuccessStatusCode ? "Successful" : "Failed";
         }
     }
