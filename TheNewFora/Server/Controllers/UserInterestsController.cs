@@ -29,8 +29,7 @@ namespace ForaForum.Server.Controllers
         [Route("getall")]
         public async Task<ActionResult<List<UserInterestModel>>> GetAllAsync()
         {
-            List<UserInterestModel> list = await _context.UsersInterests.ToListAsync();
-            return Ok(list);
+            return Ok(await _context.UsersInterests.ToListAsync());
         }
 
         [HttpGet("{id}")]
@@ -64,10 +63,9 @@ namespace ForaForum.Server.Controllers
             return Ok(await _context.SaveChangesAsync());
         }
 
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteAsync(int id)
+        [HttpDelete]
+        public async Task<ActionResult> DeleteAsync([FromBody]UserInterestModel userInterest)
         {
-            var userInterest = await _context.UsersInterests.FindAsync(id);
             _context.UsersInterests.Remove(userInterest);
             return Ok(await _context.SaveChangesAsync());
         }

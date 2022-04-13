@@ -19,11 +19,14 @@
         <h3>@Message</h3>
         <img src="@CurrentUser.PfpUrl" style="height:7rem; width:6rem;"/> 
     </div>
-    
     <div class="card">
         <div class="card-header">
-            Create interest
+            <button  class="link-dark" @onclick="ToggleCreateInterest">Create interest</button>
         </div>
+    </div>
+    @if (showCreateInterest)
+    {
+        <div class="card">
         <div class="card-body">
             <EditForm Model="interest" OnSubmit="CreateInterest">
                 <InputText id="interestName" @bind-Value="interest.Name" placeholder="InterestName"></InputText>
@@ -31,18 +34,28 @@
             </EditForm>
         </div>
     </div>
+    }
     <div class="card">
         <div class="card-header">
-            Users interests
+            <button  class="link-dark" @onclick="ToggleInterests">User interests</button>
         </div>
+    </div>
+    @if(showInterests)
+    {
+        <div class="card">
         <div class="card-body">
             <InterestsByUser></InterestsByUser>
         </div>
     </div>
+    }
     <div class="card">
         <div class="card-header">
-            Threads created by you
+            <button  class="link-dark" @onclick="ToggleThreads">Threads by you</button>
         </div>
+    </div>
+    @if (showThreads)
+    {
+       <div class="card">
             <div class="card-body">
             <div>
             @foreach(var item in threadList)
@@ -51,7 +64,8 @@
             }
             </div>
         </div>
-    </div>
+    </div> 
+    }
     <div class="card">
         <div class="card-header">
             <button  class="link-dark" @onclick="ToggleUserTools">User tools</button>
@@ -92,6 +106,10 @@
             </div>
         </div>
     }
+    @if (CurrentUser.Adminable && admin == false )
+    {
+        <button class="btn btn-primary" @onclick="MakeAdmin">Make me an admin</button>
+    }
     @if (admin)
     {
         <div class="card">
@@ -104,13 +122,9 @@
     {
         <AuthorizeView Roles="Admin">
             <NotAuthorized Context="UnAuth">
-                @if (CurrentUser.UserName == "Setterborn" || CurrentUser.Adminable )
-                {
-                    <button class="btn btn-primary" @onclick="MakeAdmin">Make me an admin</button>
-                }
+                
             </NotAuthorized>
             <Authorized Context="Auth">
-                
                 <div class="card">
                     <div class="card-header">
                         Make adminable
@@ -175,6 +189,9 @@
     private bool admin;
     private bool showUserTools;
     private bool showAdminTools;
+    private bool showInterests;
+    private bool showThreads;
+    private bool showCreateInterest;
     private string Message;
 
     private async Task MakeAdmin()
@@ -230,6 +247,39 @@
         else
         {
             showAdminTools = false;
+        }
+    }
+    private void ToggleInterests()
+    {
+        if (showInterests == false)
+        {
+            showInterests = true;
+        }
+        else
+        {
+            showInterests = false;
+        }
+    }
+    private void ToggleThreads()
+    {
+        if (showThreads == false)
+        {
+            showThreads = true;
+        }
+        else
+        {
+            showThreads = false;
+        }
+    }
+    private void ToggleCreateInterest()
+    {
+        if (showCreateInterest == false)
+        {
+            showCreateInterest = true;
+        }
+        else
+        {
+            showCreateInterest = false;
         }
     }
 

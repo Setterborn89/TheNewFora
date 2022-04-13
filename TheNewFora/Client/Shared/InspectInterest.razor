@@ -56,6 +56,7 @@
         await InterestManager.UpdateInterestAsync(interest);
         NavigationManager.NavigateTo("UserPage");
     }
+
     private async Task DeleteInterestAsync()
     {
         if (!await JSRuntime.InvokeAsync<bool>
@@ -64,6 +65,7 @@
         await InterestManager.DeleteInterestAsync(interest);
         NavigationManager.NavigateTo("UserPage");
     }
+
     private async Task AddToInterestsAsync()
     {
         UserInterestModel userInterest = new()
@@ -74,14 +76,14 @@
         await UserInterestManager.AddUserInterestAsync(userInterest);
         NavigationManager.NavigateTo("Interests");
     }
+
     private async Task RemoveFromInterestsAsync()
     {
-        List<UserInterestModel> list = await UserInterestManager.GetAllUserInterestsAsync();
+        List<UserInterestModel> list = currentUser.UserInterests;
         UserInterestModel userInterest = list.Where(x => x.UserId == currentUser.Id && x.InterestId == id).FirstOrDefault();
         await UserInterestManager.DeleteUserInterestAsync(userInterest);
         NavigationManager.NavigateTo("Interests");
     }
-
 
     protected async override Task OnInitializedAsync()
     {
