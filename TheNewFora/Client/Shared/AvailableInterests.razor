@@ -1,0 +1,100 @@
+﻿@using TheNewFora.Client.Services
+@using TheNewFora.Shared
+@inject IInterestsManager InterestManager
+@inject IApplicationUsersManager UserManager
+@inject IThreadsManager ThreadManager
+@inject AuthenticationStateProvider AuthStateProvider
+
+@foreach(var item in interestList)
+{
+    <div class="card">
+        <h5 class="card-header">
+            <div class="row">
+                <div class="col">
+                    <button class="btn btn-link" @onclick="() => HandleClick(item.Id)">@item.Name</button>
+                </div>
+                <div class="col">
+                    <a href="InspectInterest/@item.Id" class="btn btn-primary">Inspect interest</a>
+                </div>
+                <div class="col">
+                    <EditForm Model="createThread" OnSubmit="() => CreateThread(item.Id)">
+                        <InputText @bind-Value="@createThread.Name" placeholder="Create new thread"></InputText>
+                        <button class="btn-primary" type="submit">Create</button>
+                    </EditForm>
+                </div>
+            </div>
+        </h5>
+      <div class="card-body">
+        @if (showThreads.Where(x => x.InterestId == item.Id).FirstOrDefault().ShowThreads)
+        {
+            <ThreadsByInterests InterestId="item.Id"/> 
+        }
+      </div>
+    </div>
+}
+
+@code {
+    private List<InterestModel> interestList = new();
+
+    private List<ThreadDto> showThreads = new();
+    private ApplicationUser currentUser = new();
+    private bool admin;
+    private ThreadModel createThread = new();
+
+    private void HandleClick(int id)
+    {
+        if (showThreads.Where(x => x.InterestId == id).FirstOrDefault().ShowThreads == true)
+        {
+            showThreads.Where(x => x.InterestId == id).FirstOrDefault().ShowThreads = false;
+        }
+        else
+        {
+            showThreads.Where(x => x.InterestId == id).FirstOrDefault().ShowThreads = true;
+        }
+    }
+
+    private async Task CreateThread(int id)
+    {
+        createThread.InterestId = id;
+        createThread.UserId = currentUser.Id;
+        await ThreadManager.AddThreadAsync(createThread);
+        createThread = new();
+        await FetchList();
+    }
+
+    private async Task FetchList()
+    {
+        interestList = new();
+        interestList = await InterestManager.GetAllInterestsAsync();
+        showThreads = new();
+        foreach(var item in interestList)
+        {
+            ThreadDto thread = new()
+            {
+                InterestId = item.Id,
+                ShowThreads = false
+            };
+            showThreads.Add(thread);
+        }
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+
+        if(authState.User.Identity is not null &&
+        authState.User.Identity.Name is not null)
+        {
+            var userClaims = authState.User;
+            admin = userClaims.Claims.Any(c => c.Value == "Admin");
+
+            string userName = authState.User
+            .Identity
+            .Name
+            .ToString();
+            currentUser = await UserManager.GetUserAsync(userName);
+        }
+
+        await FetchList();
+    }
+}

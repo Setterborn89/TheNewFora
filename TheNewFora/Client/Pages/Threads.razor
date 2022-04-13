@@ -1,0 +1,45 @@
+﻿@page "/threads"
+@using TheNewFora.Client.Services
+@using TheNewFora.Shared
+@inject IThreadsManager ThreadManager
+
+
+<div class="card">
+    <h5 class="card-header">Search threads</h5>
+    <div class="card-body">
+        <EditForm Model="searchThread" OnSubmit="Search">
+            <InputText @bind-Value="searchThread.Name"></InputText>
+            <button class="btn-primary" type="submit">Search</button>
+        </EditForm>
+    </div>
+</div>
+
+@foreach(var item in threadList)
+{
+    <div class="card">
+      <h5 class="card-header">@item.Name</h5>
+      <div class="card-body">
+        <a href="InspectThread/@item.Id" class="btn btn-primary">Inspect thread</a>
+      </div>
+    </div>
+}
+
+@code {
+    private List<ThreadModel> threadList = new();
+    private ThreadModel searchThread = new();
+
+    private async Task Search()
+    {
+        threadList = await ThreadManager.GetAllThreadsAsync();
+        threadList = threadList.Where(x =>
+            x.Name
+            .ToLower()
+            .Contains(searchThread.Name.ToLower())
+        ).ToList();
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        threadList = await ThreadManager.GetAllThreadsAsync();
+    }
+}

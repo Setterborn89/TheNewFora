@@ -1,0 +1,108 @@
+﻿@page "/InspectInterest/{InterestId}"
+@using TheNewFora.Client.Services
+@using TheNewFora.Shared
+@inject IInterestsManager InterestManager 
+@inject IApplicationUsersManager UserManager 
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IJSRuntime JSRuntime
+@inject IUserInterestsManager UserInterestManager
+
+<div class="card">
+  <h5 class="card-header">@interest.Name</h5>
+  <div class="card-body">
+    <h5 class="card-title">Created by @creator</h5>
+    <div class="row">
+        <div class="col-2">
+            <button class="btn-primary" @onclick="AddToInterestsAsync">Add to my interests</button>
+            <button class="btn-primary" @onclick="RemoveFromInterestsAsync">Remove from my interests</button>
+        </div>
+            @if(interest.UserId == currentUser.Id || admin == true)
+            {
+                <div class="col-1">
+                    <button class="btn-primary" @onclick="DeleteInterestAsync">Delete</button>
+                </div>
+                @if(threadCount < 1 || admin == true)
+                {
+                    <div class="col">
+                        <EditForm Model="interest" OnSubmit="RenameInterestAsync">
+                            <InputText @bind-Value="interest.Name"></InputText>
+                            <button class="btn-primary" type="submit">Rename interest</button>
+                        </EditForm>
+                    </div>
+                }
+            }
+    </div>
+  </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public string InterestId { get; set; }
+
+    private InterestModel interest = new();
+    private ApplicationUser currentUser = new();
+    private string creator;
+    private bool admin;
+    private int threadCount;
+    private int id;
+
+    private async Task RenameInterestAsync()
+    {
+        if (!await JSRuntime.InvokeAsync<bool>
+            ("confirm", $"Are you sure you want to rename this interest?"))
+            return;
+        await InterestManager.UpdateInterestAsync(interest);
+        NavigationManager.NavigateTo("UserPage");
+    }
+    private async Task DeleteInterestAsync()
+    {
+        if (!await JSRuntime.InvokeAsync<bool>
+            ("confirm", $"Are you sure you want to delete this interest?"))
+            return;
+        await InterestManager.DeleteInterestAsync(interest);
+        NavigationManager.NavigateTo("UserPage");
+    }
+    private async Task AddToInterestsAsync()
+    {
+        UserInterestModel userInterest = new()
+        {
+            UserId = currentUser.Id,
+            InterestId = interest.Id
+        };
+        await UserInterestManager.AddUserInterestAsync(userInterest);
+        NavigationManager.NavigateTo("Interests");
+    }
+    private async Task RemoveFromInterestsAsync()
+    {
+        List<UserInterestModel> list = await UserInterestManager.GetAllUserInterestsAsync();
+        UserInterestModel userInterest = list.Where(x => x.UserId == currentUser.Id && x.InterestId == id).FirstOrDefault();
+        await UserInterestManager.DeleteUserInterestAsync(userInterest);
+        NavigationManager.NavigateTo("Interests");
+    }
+
+
+    protected async override Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+
+        if(authState.User.Identity is not null &&
+        authState.User.Identity.Name is not null)
+        {
+            var userClaims = authState.User;
+            admin = userClaims.Claims.Any(c => c.Value == "Admin");
+
+            string userName = authState.User
+            .Identity
+            .Name
+            .ToString();
+            currentUser = await UserManager.GetUserAsync(userName);
+        }
+
+        id = Convert.ToInt32(InterestId);
+        interest = await InterestManager.GetInterestAsync(id);
+        creator = await UserManager.GetUserNameByIdAsync(interest.UserId);
+        threadCount = await InterestManager.GetNumberOfThreadsByInterestId(id);
+    }
+}

@@ -1,0 +1,60 @@
+﻿@using TheNewFora.Client.Services
+@inject IThreadsManager ThreadManager
+@inject IApplicationUsersManager UserManager
+
+<div class="card">
+    <h5 class="card-header">
+        <button class="btn-outline-secondary" @onclick="OrderByName">Name</button>
+        <button class="btn-outline-secondary" @onclick="OrderByUser">User</button>
+    </h5>
+</div>
+
+@foreach(var item in InterestList)
+{
+    <div class="card">
+      <h5 class="card-header">@item.Name</h5>
+      <div class="card-body">
+        <h5 class="card-title">Created by: @item.UserName</h5>
+        @if(@item.BanDeleteFlag==true){<h5>User banned or deleted!!!</h5>}
+        <p class="card-text">Number of posts: @item.PostCount</p>
+        <a href="InspectThread/@item.ThreadId" class="btn btn-primary">Inspect thread</a>
+      </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int InterestId { get; set; }
+
+    public List<ThreadModel> ThreadList { get; set; }
+    private List<InterestDto> InterestList = new();
+
+    private void OrderByUser()
+    {
+        InterestList = InterestList.OrderBy(x => x.UserName).ToList();
+    }
+    private void OrderByName()
+    {
+        InterestList = InterestList.OrderBy(x => x.Name).ToList();
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        ThreadList = await ThreadManager.GetThreadsByInterestIdAsync(InterestId);
+        if(ThreadList is not null)
+        {
+            foreach(var item in ThreadList)
+            {
+                InterestDto interest = new()
+                    {
+                        ThreadId = item.Id,
+                        Name = item.Name,
+                        UserName = await UserManager.GetUserNameByIdAsync(item.UserId),
+                        PostCount = await ThreadManager.GetNumberOfPostsByThreadId(item.Id),
+                        BanDeleteFlag = await UserManager.GetBanDeleteFlagAsync(item.UserId)
+                    };
+                InterestList.Add(interest);
+            }
+        } 
+    }
+}

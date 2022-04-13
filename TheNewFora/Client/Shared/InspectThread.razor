@@ -1,0 +1,200 @@
+﻿@page "/InspectThread/{ThreadId}"
+
+@using TheNewFora.Client.Services
+@using TheNewFora.Shared
+@inject IThreadsManager ThreadManager
+@inject IApplicationUsersManager UserManager
+@inject IMessagesManager MessageManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<div class="card">
+  <h5 class="card-header">@Thread.Name</h5>
+  <div class="card-body">
+    <h5 class="card-title">Tools</h5>
+    <div class="row">
+        @if(Thread.UserId == currentUser.Id || admin==true)
+    {
+        <div class="col">
+            <button class="btn-primary" @onclick="DeleteThread">Delete thread</button>
+            <button class="btn-secondary" @onclick="ToggleOptions">Options</button>
+        </div>
+        @if (postCount < 1 || admin==true)
+        {
+            <div class="col">
+                <EditForm Model="Thread" OnSubmit="RenameThread">
+                    <InputText @bind-Value="Thread.Name"></InputText>
+                    <button class="btn-primary" type="submit">Rename thread</button>
+                </EditForm>
+            </div>
+        }
+    }
+    </div>
+  </div>
+</div>
+
+<div class="row">
+    <div class="col-10">
+        @foreach(var item in MessageList)
+        {
+            <div class="card" >
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-5">
+                            <img src="@item.ImageUrl" style="width:2rem; height: 2rem;">
+                            @item.PostedBy
+                            @item.Date
+                        </div>
+                        <div class="col-2">
+                            @if(@item.BanDeleteFlag==true){<h5>Ban/Del user</h5>}
+                        </div>
+                        <div class="col-5">
+                            @if (currentUser.UserName == @item.PostedBy || admin == true)
+                            {
+                                @if (showOptions && item.Message != "REMOVED!")
+                                {
+                                     <div class="row">
+                                        <div class="col">
+                                            <button class="btn-secondary" @onclick="() => DeleteMessage(item.MessageId)">Delete</button>
+                                        </div>
+                                        <div class="col">
+                                            <EditForm Model="editMessage" OnSubmit="() => EditMessage(item.MessageId)">
+                                                <InputTextArea style="width:17rem;" @bind-Value="@editMessage.Message" placeholder="@item.Message"></InputTextArea>
+                                                <button class="btn-primary" type="submit">Edit</button>
+                                            </EditForm>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body" style="background-color : @item.BackgroundColor">
+                    <p class="card-text">@item.Message</p>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="col-2">
+        <EditForm Model="newMessage" OnSubmit="NewMessage">
+            <div class="row" style="padding-bottom:1rem;">
+                <InputTextArea style="width:17rem;" @bind-Value="newMessage.Message"></InputTextArea>
+            </div>
+                <button class="btn-primary" type="submit">Post</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string ThreadId { get; set; }
+
+    private ThreadModel Thread = new();
+    private List<MessageDto> MessageList = new();
+    private MessageModel newMessage = new();
+    private MessageModel editMessage = new();
+    private ApplicationUser currentUser = new();
+    private int postCount;
+    private bool admin;
+    private bool showOptions;
+    private int id;
+
+    private async Task NewMessage()
+    {
+        newMessage.ThreadId = Thread.Id;
+        newMessage.UserId = currentUser.Id;
+        newMessage.Date = DateTime.Now;
+        await MessageManager.AddMessageAsync(newMessage);
+        newMessage = new();
+        await FetchListAsync();
+    }
+    private async Task FetchListAsync()
+    {
+        Thread.Messages = new();
+        id = Convert.ToInt32(ThreadId);
+        Thread = await ThreadManager.GetThreadAsync(id);
+        MessageList.Clear();
+        @foreach(var item in Thread.Messages)
+        {
+            var bkgcolor = "white";
+            if (item.UserId==currentUser.Id)
+            {
+                bkgcolor = "lightblue";
+            }
+            MessageDto message = new()
+            {
+                MessageId = item.Id,
+                Message = item.Message,
+                PostedBy = await UserManager.GetUserNameByIdAsync(item.UserId),
+                ImageUrl = await UserManager.GetUserImageAsync(item.UserId),
+                BanDeleteFlag = await UserManager.GetBanDeleteFlagAsync(item.UserId),
+                BackgroundColor = bkgcolor,
+                Date = item.Date
+            };
+            MessageList.Add(message);
+            MessageList = MessageList.OrderBy(x => x.MessageId).ToList();
+        }
+    }
+    private async Task DeleteThread()
+    {
+        if (!await JSRuntime.InvokeAsync<bool>
+            ("confirm", $"Are you sure you want to delete this thread?"))
+            return;
+        await ThreadManager.DeleteThreadAsync(Thread);
+        NavigationManager.NavigateTo("UserPage");
+    }
+    private void ToggleOptions()
+    {
+        if (showOptions == false)
+        {
+            showOptions = true;
+        }
+        else
+        {
+            showOptions = false;
+        }
+    }
+    private async Task RenameThread()
+    {
+        await ThreadManager.UpdateThreadAsync(Thread);
+        NavigationManager.NavigateTo("UserPage");
+    }
+    private async Task DeleteMessage(int id)
+    {
+        MessageModel edit = await MessageManager.GetMessageAsync(id);
+        edit.Message = "REMOVED!";
+        await MessageManager.UpdateMessageAsync(edit);
+        await FetchListAsync();
+        StateHasChanged();
+    }
+    private async Task EditMessage(int id)
+    {
+        MessageModel edit = await MessageManager.GetMessageAsync(id);
+        edit.Message = editMessage.Message + "  - MESSAGE EDITED!";
+        await MessageManager.UpdateMessageAsync(edit);
+        await FetchListAsync();
+        StateHasChanged();
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+
+        if(authState.User.Identity is not null &&
+        authState.User.Identity.Name is not null)
+        {
+            var userClaims = authState.User;
+            admin = userClaims.Claims.Any(c => c.Value == "Admin");
+
+            string userName = authState.User
+            .Identity
+            .Name
+            .ToString();
+            currentUser = await UserManager.GetUserAsync(userName);
+        }
+        id = Convert.ToInt32(ThreadId);
+        postCount = await ThreadManager.GetNumberOfPostsByThreadId(id);
+        await FetchListAsync();
+    }
+}

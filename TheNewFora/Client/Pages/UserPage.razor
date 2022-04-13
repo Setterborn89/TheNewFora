@@ -1,0 +1,403 @@
+﻿@page "/UserPage"
+@using TheNewFora.Client.Services
+@using Microsoft.AspNetCore.Identity
+@using TheNewFora.Shared
+@inject IInterestsManager InterestsManager
+@inject IThreadsManager ThreadsManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IApplicationUsersManager AppUserManager
+@inject ILocalStorageService LocalStorage
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+
+@if(CurrentUser is not null)
+{
+    <div>
+        <h1>Welcome @CurrentUser.UserName</h1>
+        <h3>@Message</h3>
+        <img src="@CurrentUser.PfpUrl" style="height:7rem; width:6rem;"/> 
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            Create interest
+        </div>
+        <div class="card-body">
+            <EditForm Model="interest" OnSubmit="CreateInterest">
+                <InputText id="interestName" @bind-Value="interest.Name" placeholder="InterestName"></InputText>
+                <button class="btn-primary" type="submit">Create interest</button>
+            </EditForm>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            Users interests
+        </div>
+        <div class="card-body">
+            <InterestsByUser></InterestsByUser>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            Threads created by you
+        </div>
+            <div class="card-body">
+            <div>
+            @foreach(var item in threadList)
+            {
+                <p>@item.Name</p>
+            }
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <button  class="link-dark" @onclick="ToggleUserTools">User tools</button>
+        </div>
+    </div>
+    @if (showUserTools)
+    {
+        <div class="card">
+            <div class="card-header">
+                Change password
+            </div>
+            <div class="card-body">
+                <EditForm Model="PasswordDto" OnSubmit="ChangePassword">
+                    <InputText type="password" id="Password" @bind-Value="PasswordDto.OldPassword" placeholder="Current password"></InputText>
+                    <InputText type="password" id="Password" @bind-Value="PasswordDto.Password" placeholder="New password"></InputText>
+                    <InputText type="password" id="Password" @bind-Value="PasswordDto.ConfirmPassword" placeholder="Confirm new password"></InputText>
+                    <button class="btn-primary" type="submit">Change password</button>
+                </EditForm>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                Change PFP
+            </div>
+                <div class="card-body">
+                <EditForm Model="CurrentUser" OnSubmit="ChangePfp">
+                    <InputText id="pfpurl" @bind-Value="CurrentUser.PfpUrl" placeholder="Pfp Url"></InputText>
+                    <button class="btn-primary" type="submit">Change pfp</button>
+                </EditForm>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                Delete user
+            </div>
+            <div class="card-body">
+                <button @onclick="@DeleteUser" class="btn-primary"> Delete </button>
+            </div>
+        </div>
+    }
+    @if (admin)
+    {
+        <div class="card">
+            <div class="card-header">
+                <button class="link-dark" @onclick="ToggleAdminTools">Admin tools</button>
+            </div>
+        </div>
+    }
+    @if (showAdminTools)
+    {
+        <AuthorizeView Roles="Admin">
+            <NotAuthorized Context="UnAuth">
+                @if (CurrentUser.UserName == "Setterborn" || CurrentUser.Adminable )
+                {
+                    <button class="btn btn-primary" @onclick="MakeAdmin">Make me an admin</button>
+                }
+            </NotAuthorized>
+            <Authorized Context="Auth">
+                
+                <div class="card">
+                    <div class="card-header">
+                        Make adminable
+                    </div>
+                    <div class="card-body">
+                        <EditForm Model="AdminableDto" OnSubmit="MakeAdminable">
+                            <InputText id="userName" @bind-Value="AdminableDto.Username" placeholder="Username"></InputText>
+                            <button class="btn-primary" type="submit">Make Adminable</button>
+                        </EditForm>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        Remove admin role
+                    </div>
+                    <div class="card-body">
+                        <EditForm Model="RemoveAdminDto" OnSubmit="RemoveAdmin">
+                            <InputText id="userName" @bind-Value="RemoveAdminDto.Username" placeholder="Username"></InputText>
+                            <button class="btn-primary" type="submit">Remove admin</button>
+                        </EditForm>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        Ban user
+                    </div>
+                    <div class="card-body">
+                        <EditForm Model="UserBan" OnSubmit="BanUser">
+                            <InputText id="userName" @bind-Value="UserBan.Username" placeholder="Username"></InputText>
+                            <button class="btn-primary" type="submit">Ban user</button>
+                        </EditForm>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        Unban user
+                    </div>
+                    <div class="card-body">
+                        <EditForm Model="UserUnBan" OnSubmit="UnBanUser">
+                            <InputText id="userName" @bind-Value="UserUnBan.Username" placeholder="Username"></InputText>
+                            <button class="btn-primary" type="submit">Unban user</button>
+                        </EditForm>
+                    </div>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+    }
+}
+
+@code {
+    private InterestModel interest = new();
+    private List<InterestModel> list = new();
+    private UserDto PasswordDto = new();
+    private UserDto AdminableDto = new();
+    private UserDto RemoveAdminDto = new();
+    private UserDto UserBan = new();
+    private UserDto UserUnBan = new();
+    private UserDto UserDelete = new();
+    private List<ThreadModel> threadList = new();
+    private List<InterestModel> interestList = new();
+    private ApplicationUser? CurrentUser = new();
+    private bool admin;
+    private bool showUserTools;
+    private bool showAdminTools;
+    private string Message;
+
+    private async Task MakeAdmin()
+    {
+        var token = await LocalStorage.GetItemAsStringAsync("token");
+
+        TokenDto t = new()
+        {
+            Token = token.Replace("\"", "")
+        };
+
+        var response = await Http.PostAsJsonAsync<TokenDto>("api/auth/admin", t);
+
+        var newToken = await response.Content.ReadAsStringAsync();
+
+        await LocalStorage.SetItemAsStringAsync("token", newToken);
+
+        await AuthStateProvider.GetAuthenticationStateAsync();
+    }
+
+    public async Task CreateInterest()
+    {
+        if(CurrentUser is not null)
+        {
+            CurrentUser.Interests = new();
+            CurrentUser.Interests.Add(interest);
+            await AppUserManager.UpdateUserAsync(CurrentUser);
+            interest = new();
+        }
+        else
+        {
+            Message = "Fail";
+        }
+    }
+
+    private void ToggleUserTools()
+    {
+        if (showUserTools == false)
+        {
+            showUserTools = true;
+        }
+        else
+        {
+            showUserTools = false;
+        }
+    }
+    private void ToggleAdminTools()
+    {
+        if (showAdminTools == false)
+        {
+            showAdminTools = true;
+        }
+        else
+        {
+            showAdminTools = false;
+        }
+    }
+
+    public async Task ChangePassword()
+    {
+        if (!await JSRuntime.InvokeAsync<bool>
+            ("confirm", $"Are you sure you want to change your password?"))
+            return;
+
+        if(PasswordDto.Password == PasswordDto.ConfirmPassword &&
+        CurrentUser is not null)
+        {
+            var token = await LocalStorage.GetItemAsStringAsync("token");
+            TokenDto t = new() { Token = token.Replace("\"", "") };
+            PasswordDto.Token = t;
+            PasswordDto.Username = CurrentUser.UserName; ;
+            await AppUserManager.ChangePasswordAsync(PasswordDto);
+        }
+        else
+        {
+            await JSRuntime.InvokeAsync<bool>
+            ("alert", "Passwords dont match!");
+            NavigationManager.NavigateTo("/userpage", true);
+        }
+    }
+
+    public async Task ChangePfp()
+    {
+        if(CurrentUser is not null)
+        {
+            await AppUserManager.UpdateUserAsync(CurrentUser);
+        }
+        else
+        {
+            Message = "Fail";
+        }
+    }
+
+    public async Task DeleteUser()
+    {
+        if (!await JSRuntime.InvokeAsync<bool>
+            ("confirm", $"Are you sure you want to delete your account?"))
+            return;
+
+        if (CurrentUser is not null)
+        {
+            CurrentUser.Deleted = true;
+            await AppUserManager.UpdateUserAsync(CurrentUser);
+            await LocalStorage.RemoveItemAsync("token");
+            await AuthStateProvider.GetAuthenticationStateAsync();
+            NavigationManager.NavigateTo("", true);
+        }
+        else
+        {
+            Message = "Fail";
+        }
+    }
+
+    public async Task MakeAdminable()
+    {
+        if (!await JSRuntime.InvokeAsync<bool>
+            ("confirm", $"Are you sure you want to make {AdminableDto.Username} adminable?"))
+            return;
+
+        if(AdminableDto.Username is not null)
+        {
+            var user = await AppUserManager.GetUserAsync(AdminableDto.Username);
+            if(user is not null)
+            {
+                user.Adminable = true;
+                await AppUserManager.UpdateUserAsync(user);
+            }
+        }
+        else
+        {
+            Message = "Fail";
+        }
+    }
+
+    public async Task RemoveAdmin()
+    {
+        if (!await JSRuntime.InvokeAsync<bool>
+            ("confirm", $"Are you sure you want to remove {RemoveAdminDto.Username}s admin role?"))
+            return;
+
+        if(RemoveAdminDto.Username is  not null)
+        {
+            var user = await AppUserManager.GetUserAsync(RemoveAdminDto.Username);
+            if(user is not null)
+            {
+                user.Adminable = false;
+                await AppUserManager.UpdateUserAsync(user); 
+            }
+        }
+        else
+        {
+            Message = "Fail";
+        }
+    }
+
+    public async Task BanUser()
+    {
+        if (!await JSRuntime.InvokeAsync<bool>
+            ("confirm", $"Are you sure you want to ban {UserBan.Username}?"))
+            return;
+
+        if(UserBan.Username is not null)
+        {
+            var user = await AppUserManager.GetUserAsync(UserBan.Username);
+            if(user is not null)
+            {
+                user.Banned = true;
+                await AppUserManager.UpdateUserAsync(user);
+            }
+        }
+        else
+        {
+            Message = "Fail";
+        }
+    }
+
+    public async Task UnBanUser()
+    {
+        if (!await JSRuntime.InvokeAsync<bool>
+            ("confirm", $"Are you sure you want to unban {UserUnBan.Username}?"))
+            return;
+
+        if (UserUnBan.Username is not null)
+        {
+            var user = await AppUserManager.GetUserAsync(UserUnBan.Username);
+            if(user is not null)
+            {
+                user.Banned = false;
+                await AppUserManager.UpdateUserAsync(user); 
+            }
+        }
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        interestList = await InterestsManager.GetAllInterestsAsync();
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+
+        if(authState.User.Identity is not null &&
+        authState.User.Identity.Name is not null)
+        {
+            var userClaims = authState.User;
+            admin = userClaims.Claims.Any(c => c.Value == "Admin");
+
+            if(admin)
+            { 
+                Message = "Admin"; 
+            }
+            string userName = authState.User
+            .Identity
+            .Name
+            .ToString();
+            CurrentUser = await AppUserManager.GetUserAsync(userName);
+            var list = await ThreadsManager.GetAllThreadsAsync();
+            
+
+            if(userName is not null && 
+            CurrentUser is not null &&
+            list is not null)
+            {
+                threadList = list.Where(u => u.UserId == CurrentUser.Id).ToList();
+            }
+        } 
+    }
+}
