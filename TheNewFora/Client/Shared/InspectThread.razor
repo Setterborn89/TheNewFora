@@ -14,22 +14,25 @@
   <div class="card-body">
     <h5 class="card-title">Tools</h5>
     <div class="row">
-        @if(Thread.UserId == currentUser.Id || admin==true)
-    {
         <div class="col">
-            <button class="btn-primary" @onclick="DeleteThread">Delete thread</button>
             <button class="btn-secondary" @onclick="ToggleOptions">Options</button>
         </div>
-        @if (postCount < 1 || admin==true)
+        @if(Thread.UserId == currentUser.Id || admin==true)
         {
             <div class="col">
-                <EditForm Model="Thread" OnSubmit="RenameThread">
-                    <InputText @bind-Value="Thread.Name"></InputText>
-                    <button class="btn-primary" type="submit">Rename thread</button>
-                </EditForm>
+                <button class="btn-primary" @onclick="DeleteThread">Delete thread</button>
+            
             </div>
+            @if (postCount < 1 || admin==true)
+            {
+                <div class="col">
+                    <EditForm Model="Thread" OnSubmit="RenameThread">
+                        <InputText @bind-Value="Thread.Name"></InputText>
+                        <button class="btn-primary" type="submit">Rename thread</button>
+                    </EditForm>
+                </div>
+            }
         }
-    }
     </div>
   </div>
 </div>
