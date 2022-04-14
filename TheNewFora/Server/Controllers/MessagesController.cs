@@ -51,8 +51,16 @@ namespace ForaForum.Server.Controllers
         public async Task<ActionResult> DeleteAsync(int id)
         {
             var message = await _context.Messages.FindAsync(id);
-            _context.Messages.Remove(message);
-            return Ok(await _context.SaveChangesAsync());
+            if(message is not null)
+            {
+                _context.Messages.Remove(message);
+                return Ok(await _context.SaveChangesAsync());
+            }
+            else
+            {
+                return NotFound();
+            }
+            
         }
     }
 }

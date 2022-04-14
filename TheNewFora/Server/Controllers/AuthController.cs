@@ -190,12 +190,18 @@ namespace ForaForum.Server.Controllers
 
         [HttpPost]
         [Route("changepassword")]
-        public async Task ChangePassword(UserDto user)
+        public async Task<ActionResult> ChangePassword(UserDto user)
         {
+            ApplicationUser? currentUser = new();
             var users = await _signInManager.UserManager.Users.ToListAsync();
-            var currentUser = users.FirstOrDefault(u => u.JwtToken == user.Token.Token);
+            if(user.Token is not null)
+            {
+                currentUser = users.FirstOrDefault(u => u.JwtToken == user.Token.Token);
+            }
 
-            await _signInManager.UserManager.ChangePasswordAsync(currentUser,user.OldPassword ,user.Password);
+            return currentUser is not null ? 
+                Ok(await _signInManager.UserManager.ChangePasswordAsync(currentUser, user.OldPassword, user.Password)) 
+                : BadRequest();
         }
     }
 }

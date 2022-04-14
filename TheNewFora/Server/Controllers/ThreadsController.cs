@@ -65,8 +65,16 @@ namespace ForaForum.Server.Controllers
         public async Task<ActionResult> DeleteAsync(int id)
         {
             var thread = await _context.Threads.FindAsync(id);
-            _context.Threads.Remove(thread);
-            return Ok(await _context.SaveChangesAsync());
+            if(thread is not null)
+            {
+                _context.Threads.Remove(thread);
+                return Ok(await _context.SaveChangesAsync());
+            }
+            else
+            {
+                return NotFound();
+            }
+            
         }
     }
 }

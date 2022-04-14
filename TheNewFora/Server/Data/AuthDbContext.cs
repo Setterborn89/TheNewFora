@@ -8,7 +8,7 @@ namespace TheNewFora.Server.Data
     {
         public AuthDbContext(DbContextOptions<AuthDbContext> options) : base(options)
         {
-            
+          
         }
         public DbSet<InterestModel> Interests { get; set; }
         public DbSet<ThreadModel> Threads { get; set; }

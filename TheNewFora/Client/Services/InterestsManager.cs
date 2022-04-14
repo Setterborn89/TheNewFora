@@ -15,10 +15,10 @@ namespace TheNewFora.Client.Services
 
         //  Database Calls
 
-        public async Task<List<InterestModel>> GetAllInterestsAsync()
+        public async Task<List<InterestModel>?> GetAllInterestsAsync()
         {
             HttpResponseMessage response = await _client.GetAsync($"api/interests");
-            var list = await response.Content.ReadAsAsync<List<InterestModel>>();
+            List<InterestModel> list = await response.Content.ReadAsAsync<List<InterestModel>>();
             return response.IsSuccessStatusCode ? list : null;
         }
         public async Task<InterestModel?> GetInterestAsync(int id)

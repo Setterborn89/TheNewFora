@@ -6,7 +6,7 @@ namespace TheNewFora.Client.Services
     {
         Task<string> AddInterestAsync(InterestModel interest);
         Task<string> DeleteInterestAsync(InterestModel interest);
-        Task<List<InterestModel>> GetAllInterestsAsync();
+        Task<List<InterestModel>?> GetAllInterestsAsync();
         Task<InterestModel?> GetInterestAsync(int id);
         Task<string?> GetInterestNameAsync(int id);
         Task<int> GetNumberOfThreadsByInterestId(int id);

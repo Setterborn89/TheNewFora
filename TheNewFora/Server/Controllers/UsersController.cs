@@ -40,29 +40,51 @@ namespace ForaForum.Server.Controllers
         public ActionResult<string> GetByIdAsync([FromQuery]string id)
         {
             var user = _context.Users.Where(x => x.Id == id).FirstOrDefault();
-            return Ok(user.UserName);
+            if(user is not null)
+            {
+                return Ok(user.UserName);
+            }
+            else
+            {
+                return NotFound();
+            }
+            
         }
         [HttpGet]
         [Route("getuserimagebyid")]
         public ActionResult<string> GetUserImageByIdAsync([FromQuery] string id)
         {
             var user = _context.Users.Where(x => x.Id == id).FirstOrDefault();
-            return Ok(user.PfpUrl);
+            if(user is not null)
+            {
+                return Ok(user.PfpUrl);
+            }
+            else
+            {
+                return NotFound();
+            }
+            
         }
         [HttpGet]
         [Route("getbanflag")]
         public ActionResult<bool> GetBanDeletFlagAsync([FromQuery]string id)
         {
             var user = _context.Users.Where(x => x.Id == id).FirstOrDefault();
-            if(user.Banned || user.Deleted)
+            if(user is not null)
             {
-                return Ok(true);
+                if (user.Banned || user.Deleted)
+                {
+                    return Ok(true);
+                }
+                else
+                {
+                    return Ok(false);
+                }
             }
-            else
-            {
-                return Ok(false);
-            }
-            
+            else 
+            { 
+                return Ok(false); 
+            } 
         }
         [HttpPost]
         public async Task<ActionResult> PostAsync([FromBody] ApplicationUser user)

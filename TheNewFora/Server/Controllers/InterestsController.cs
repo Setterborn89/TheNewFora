@@ -44,7 +44,15 @@ namespace ForaForum.Server.Controllers
         public async Task<ActionResult> GetInterestNameAsync([FromQuery] int id)
         {
             var interest = await _context.Interests.Where(x => x.Id == id).FirstOrDefaultAsync();
-            return Ok(interest.Name);
+            if(interest is not null)
+            {
+                return Ok(interest.Name);
+            }
+            else
+            {
+                return NotFound();
+            }
+            
         }
 
         [HttpPost]
@@ -66,8 +74,16 @@ namespace ForaForum.Server.Controllers
         public async Task<ActionResult> DeleteAsync(int id)
         {
             var interest = await _context.Interests.FindAsync(id);
-            _context.Interests.Remove(interest);
-            return Ok(await _context.SaveChangesAsync());
+            if(interest is not null)
+            {
+                _context.Interests.Remove(interest);
+                return Ok(await _context.SaveChangesAsync());
+            }
+            else
+            {
+                return NotFound();
+            }
+            
         }
     }
 }

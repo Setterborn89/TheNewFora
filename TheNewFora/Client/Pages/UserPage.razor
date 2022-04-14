@@ -4,20 +4,25 @@
 @using TheNewFora.Shared
 @inject IInterestsManager InterestsManager
 @inject IThreadsManager ThreadsManager
-@inject AuthenticationStateProvider AuthStateProvider
 @inject IApplicationUsersManager AppUserManager
 @inject ILocalStorageService LocalStorage
-@inject HttpClient Http
 @inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthStateProvider
+@inject HttpClient Http
 @inject NavigationManager NavigationManager
-
 
 @if(CurrentUser is not null)
 {
     <div>
-        <h1>Welcome @CurrentUser.UserName</h1>
-        <h3>@Message</h3>
-        <img src="@CurrentUser.PfpUrl" style="height:7rem; width:6rem;"/> 
+        <div class="row">
+            <div class="col">
+                <h1>Welcome @CurrentUser.UserName</h1>
+                <h3>@Message</h3>
+            </div>
+            <div class="col">
+                <img src="@CurrentUser.PfpUrl" style="height:7rem; width:6rem;"/> 
+            </div>
+        </div>
     </div>
     <div class="card">
         <div class="card-header">
@@ -55,13 +60,13 @@
     </div>
     @if (showThreads)
     {
-       <div class="card">
+        <div class="card">
             <div class="card-body">
             <div>
-            @foreach(var item in threadList)
-            {
-                <p>@item.Name</p>
-            }
+                @foreach(var item in threadList)
+                {
+                    <p>@item.Name</p>
+                }
             </div>
         </div>
     </div> 
@@ -176,23 +181,22 @@
 
 @code {
     private InterestModel interest = new();
-    private List<InterestModel> list = new();
+    private ApplicationUser? CurrentUser = new();
+    private List<ThreadModel> threadList = new();
+    private List<InterestModel>? interestList = new();
     private UserDto PasswordDto = new();
     private UserDto AdminableDto = new();
     private UserDto RemoveAdminDto = new();
     private UserDto UserBan = new();
     private UserDto UserUnBan = new();
     private UserDto UserDelete = new();
-    private List<ThreadModel> threadList = new();
-    private List<InterestModel> interestList = new();
-    private ApplicationUser? CurrentUser = new();
+    private string Message;
     private bool admin;
     private bool showUserTools;
     private bool showAdminTools;
     private bool showInterests;
     private bool showThreads;
     private bool showCreateInterest;
-    private string Message;
 
     private async Task MakeAdmin()
     {

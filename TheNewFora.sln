@@ -3,11 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheNewFora.Server", "TheNewFora\Server\TheNewFora.Server.csproj", "{0F6546CB-E139-4C6C-8432-EC1AD0A23617}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheNewFora.Server", "TheNewFora\Server\TheNewFora.Server.csproj", "{0F6546CB-E139-4C6C-8432-EC1AD0A23617}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheNewFora.Client", "TheNewFora\Client\TheNewFora.Client.csproj", "{298C4DA5-A0CF-4C21-98C2-B1799472DEA4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheNewFora.Client", "TheNewFora\Client\TheNewFora.Client.csproj", "{298C4DA5-A0CF-4C21-98C2-B1799472DEA4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheNewFora.Shared", "TheNewFora\Shared\TheNewFora.Shared.csproj", "{A848F776-9B59-43A9-BCAE-11C8404482CC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheNewFora.Shared", "TheNewFora\Shared\TheNewFora.Shared.csproj", "{A848F776-9B59-43A9-BCAE-11C8404482CC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{91B58F61-AC0A-4E97-B81A-CA3102E9F3F4}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
