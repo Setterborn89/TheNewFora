@@ -6,6 +6,8 @@
 @inject IInterestsManager InterestManager
 @inject IThreadsManager ThreadManager
 
+@if(warning){<button class="btn-warning" @onclick="() => warning=false">@Message</button>}
+
 @foreach(var item in userInterestDtoList)
 {
     <div class="card">
@@ -39,9 +41,12 @@
     private ApplicationUser currentUser = new();
     private bool admin;
     private List<UserInterestModel> userInterestList = new();
+    private List<ThreadModel> threadList = new();
     private List<UserInterestsDto> userInterestDtoList = new();
     private List<ThreadDto> showThreads= new();
     private ThreadModel createThread = new();
+    private string Message = "";
+    private bool warning;
 
     private void HandleClick(int id)
     {
@@ -57,15 +62,25 @@
 
     private async Task CreateThread(int id)
     {
-        createThread.InterestId = id;
-        createThread.UserId = currentUser.Id;
-        await ThreadManager.AddThreadAsync(createThread);
+        if(!threadList.Contains(threadList.Where(x=> x.Name.ToLower() == createThread.Name.ToLower()).FirstOrDefault()))
+        {
+            createThread.InterestId = id;
+            createThread.UserId = currentUser.Id;
+            await ThreadManager.AddThreadAsync(createThread);
+        }
+        else
+        {
+            Message = "Fail";
+            warning = true;
+        }
         createThread = new();
         await FetchList();
+
     }
 
     private async Task FetchList()
     {
+        threadList = await ThreadManager.GetAllThreadsAsync();
         userInterestList = new();
         userInterestList.AddRange(currentUser.UserInterests);
         if(userInterestList is null){ userInterestList = new(); }
@@ -73,11 +88,11 @@
         foreach(var item in userInterestList)
         {
             UserInterestsDto interest = new()
-                {
-                    InterestId = item.InterestId,
-                    Name = await InterestManager.GetInterestNameAsync(@item.InterestId),
-                    UserName = await UserManager.GetUserNameByIdAsync(item.UserId)
-                };
+            {
+                InterestId = item.InterestId,
+                Name = await InterestManager.GetInterestNameAsync(@item.InterestId),
+                UserName = await UserManager.GetUserNameByIdAsync(item.UserId)
+            };
             userInterestDtoList.Add(interest);
         }
         showThreads = new(); 
