@@ -3,12 +3,13 @@ using TheNewFora.Shared;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace ForaForum.Server.Controllers
 {
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]
     [Route("api/[controller]")]
     public class MessagesController : ControllerBase
@@ -21,9 +22,9 @@ namespace ForaForum.Server.Controllers
         }
 
         [HttpGet]
-        public ActionResult Get()
+        public async Task<ActionResult<List<MessageModel>>> GetAllAsync()
         {
-            return Ok(_context.Messages.ToList());
+            return Ok(await _context.Messages.ToListAsync());
         }
 
         [HttpGet("{id}")]

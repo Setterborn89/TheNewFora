@@ -13,15 +13,14 @@
 
 @if(CurrentUser is not null)
 {
-    <div>
-        <div class="row">
-            <div class="col">
-                <h1>Welcome @CurrentUser.UserName</h1>
-                <h3>@Message</h3>
-            </div>
-            <div class="col">
-                <img src="@CurrentUser.PfpUrl" style="height:7rem; width:6rem;"/> 
-            </div>
+
+    <div class="row" style="padding-bottom: 2rem;">
+        <div class="col-md-2">
+            <img src="@CurrentUser.PfpUrl" style="height:7rem; width:6rem; border:double"/> 
+        </div>
+        <div class="col-md-10">
+            <h1>Welcome @CurrentUser.UserName</h1>
+            <h3>@Message</h3>
         </div>
     </div>
     <div class="card">
@@ -65,7 +64,9 @@
             <div>
                 @foreach(var item in threadList)
                 {
-                    <p>@item.Name</p>
+                    <div class="row">
+                        <a href="InspectThread/@item.Id">@item.Name</a>
+                    </div>
                 }
             </div>
         </div>

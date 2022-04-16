@@ -1,6 +1,5 @@
 ﻿using TheNewFora.Shared;
 using System.Net.Http.Json;
-using System.Text.Json;
 
 namespace TheNewFora.Client.Services
 {
@@ -12,8 +11,6 @@ namespace TheNewFora.Client.Services
         {
             _client = client;
         }
-
-        //  Database Calls
 
         public async Task<List<ThreadModel>?> GetAllThreadsAsync()
         {
@@ -27,7 +24,9 @@ namespace TheNewFora.Client.Services
         }
         public async Task<List<ThreadModel>?> GetThreadsByInterestIdAsync(int id)
         {
-            return await _client.GetFromJsonAsync<List<ThreadModel>>($"api/threads/getbyinterestid?id={id}");
+            HttpResponseMessage response = await _client.GetAsync($"api/threads/getbyinterestid?id={id}");
+            var threadList = await response.Content.ReadAsAsync<List<ThreadModel>>();
+            return response.IsSuccessStatusCode ? threadList : null;
         }
         public async Task<int> GetNumberOfPostsByThreadId(int id)
         {

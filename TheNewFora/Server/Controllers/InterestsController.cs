@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ForaForum.Server.Controllers
 {
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]
     [Route("api/[controller]")]
     public class InterestsController : ControllerBase
@@ -29,19 +29,19 @@ namespace ForaForum.Server.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult> GetAsync(int id)
+        public async Task<ActionResult<InterestModel>> GetAsync(int id)
         {
             return Ok(await _context.Interests.FindAsync(id));
         }
         [HttpGet]
         [Route("getthreadsbyid")]
-        public async Task<ActionResult> GetPostsByIdAsync([FromQuery] int id)
+        public async Task<ActionResult<int>> GetPostsByIdAsync([FromQuery] int id)
         {
             return Ok(await _context.Threads.Where(x => x.InterestId == id).CountAsync());
         }
         [HttpGet]
         [Route("getinterestname")]
-        public async Task<ActionResult> GetInterestNameAsync([FromQuery] int id)
+        public async Task<ActionResult<InterestModel>> GetInterestNameAsync([FromQuery] int id)
         {
             var interest = await _context.Interests.Where(x => x.Id == id).FirstOrDefaultAsync();
             if(interest is not null)

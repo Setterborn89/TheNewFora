@@ -11,8 +11,6 @@ namespace TheNewFora.Client.Services
             _client = client;
         }
 
-        //  Database Calls
-
         public async Task<List<MessageModel>?> GetAllMessagesAsync()
         {
             HttpResponseMessage response = await _client.GetAsync($"api/messages");

@@ -13,8 +13,6 @@ namespace TheNewFora.Client.Services
             _client = client;
         }
 
-        //  Database Calls
-
         public async Task<List<UserInterestModel>?> GetAllUserInterestsByIdAsync(string id)
         {
             HttpResponseMessage response = await _client.GetAsync($"api/userinterests?id={id}");

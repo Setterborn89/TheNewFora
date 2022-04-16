@@ -11,80 +11,78 @@
 
 <div class="card">
   <h5 class="card-header">@Thread.Name</h5>
-  <div class="card-body">
+    <div class="card-body">
     <h5 class="card-title">Tools</h5>
-    <div class="row">
-        <div class="col">
-            <button class="btn-secondary" @onclick="ToggleOptions">Options</button>
-        </div>
-        @if(Thread.UserId == currentUser.Id || admin==true)
-        {
+        <div class="row">
             <div class="col">
-                <button class="btn-primary" @onclick="DeleteThread">Delete thread</button>
-            
+                <button class="btn-secondary" @onclick="ToggleOptions">Options</button>
             </div>
-            @if (postCount < 1 || admin==true)
+            @if(Thread.UserId == currentUser.Id || admin==true)
             {
                 <div class="col">
-                    <EditForm Model="Thread" OnSubmit="RenameThread">
-                        <InputText @bind-Value="Thread.Name"></InputText>
-                        <button class="btn-primary" type="submit">Rename thread</button>
-                    </EditForm>
+                    <button class="btn-primary" @onclick="DeleteThread">Delete thread</button>
+            
                 </div>
+                @if (postCount < 1 || admin==true)
+                {
+                    <div class="col">
+                        <EditForm Model="Thread" OnSubmit="RenameThread">
+                            <InputText @bind-Value="Thread.Name"></InputText>
+                            <button class="btn-primary" type="submit">Rename thread</button>
+                        </EditForm>
+                    </div>
+                }
             }
-        }
+        </div>
     </div>
-  </div>
 </div>
-
-<div class="row">
-    <div class="col-10">
-        @foreach(var item in MessageList)
-        {
-            <div class="card" >
-                <div class="card-header">
-                    <div class="row">
-                        <div class="col-5">
-                            <img src="@item.ImageUrl" style="width:2rem; height: 2rem;">
-                            @item.PostedBy
-                            @item.Date
-                        </div>
-                        <div class="col-2">
-                            @if(@item.BanDeleteFlag==true){<h5>Ban/Del user</h5>}
-                        </div>
-                        <div class="col-5">
-                            @if (currentUser.UserName == @item.PostedBy || admin == true)
+<div>
+    @foreach(var item in MessageList)
+    {
+        <div class="card" >
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-5">
+                        <img src="@item.ImageUrl" style="width:2rem; height: 2rem;">
+                        @item.PostedBy
+                        @item.Date
+                    </div>
+                    <div class="col-2">
+                        @if(@item.BanDeleteFlag==true){<h5>Ban/Del user</h5>}
+                    </div>
+                    <div class="col-5">
+                        @if (currentUser.UserName == @item.PostedBy || admin == true)
+                        {
+                            @if (showOptions && item.Message != "REMOVED!")
                             {
-                                @if (showOptions && item.Message != "REMOVED!")
-                                {
-                                     <div class="row">
-                                        <div class="col">
-                                            <button class="btn-secondary" @onclick="() => DeleteMessage(item.MessageId)">Delete</button>
-                                        </div>
-                                        <div class="col">
-                                            <EditForm Model="editMessage" OnSubmit="() => EditMessage(item.MessageId)">
-                                                <InputTextArea style="width:17rem;" @bind-Value="@editMessage.Message" placeholder="@item.Message"></InputTextArea>
-                                                <button class="btn-primary" type="submit">Edit</button>
-                                            </EditForm>
-                                        </div>
+                                    <div class="row">
+                                    <div class="col">
+                                        <button class="btn-secondary" @onclick="() => DeleteMessage(item.MessageId)">Delete</button>
                                     </div>
-                                }
+                                    <div class="col">
+                                        <EditForm Model="editMessage" OnSubmit="() => EditMessage(item.MessageId)">
+                                            <InputTextArea @bind-Value="@editMessage.Message" placeholder="@item.Message"></InputTextArea>
+                                            <button class="btn-primary" type="submit">Edit</button>
+                                        </EditForm>
+                                    </div>
+                                </div>
                             }
-                        </div>
+                        }
                     </div>
                 </div>
-                <div class="card-body" style="background-color : @item.BackgroundColor">
-                    <p class="card-text">@item.Message</p>
-                </div>
             </div>
-        }
-    </div>
-    <div class="col-2">
+            <div class="card-body" style="background-color : @item.BackgroundColor">
+                <p class="card-text">@item.Message</p>
+            </div>
+        </div>
+    }
+</div>
+<div class="card">
+    <h5 class="card-header">Make new post</h5>
+    <div class="card-body">
         <EditForm Model="newMessage" OnSubmit="NewMessage">
-            <div class="row" style="padding-bottom:1rem;">
-                <InputTextArea style="width:17rem;" @bind-Value="newMessage.Message"></InputTextArea>
-            </div>
-                <button class="btn-primary" type="submit">Post</button>
+            <InputTextArea style="width:100%" @bind-Value="newMessage.Message"></InputTextArea>
+            <button class="btn btn-primary" type="submit">Post</button>
         </EditForm>
     </div>
 </div>
@@ -169,7 +167,6 @@
         edit.Message = "REMOVED!";
         await MessageManager.UpdateMessageAsync(edit);
         await FetchListAsync();
-        StateHasChanged();
     }
     private async Task EditMessage(int id)
     {
@@ -177,7 +174,7 @@
         edit.Message = editMessage.Message + "  - MESSAGE EDITED!";
         await MessageManager.UpdateMessageAsync(edit);
         await FetchListAsync();
-        StateHasChanged();
+        editMessage = new();
     }
 
     protected async override Task OnInitializedAsync()
