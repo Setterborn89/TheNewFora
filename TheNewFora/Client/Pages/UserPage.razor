@@ -221,10 +221,18 @@
     {
         if(CurrentUser is not null)
         {
-            CurrentUser.Interests = new();
-            CurrentUser.Interests.Add(interest);
-            await AppUserManager.UpdateUserAsync(CurrentUser);
-            interest = new();
+            if(!interestList.Contains(interestList.Where(x=> x.Name == interest.Name).FirstOrDefault()))
+            {
+                CurrentUser.Interests = new();
+                CurrentUser.Interests.Add(interest);
+                await AppUserManager.UpdateUserAsync(CurrentUser);
+                interest = new();
+            }
+            else
+            {
+                Message = "Fail";
+            }
+
         }
         else
         {

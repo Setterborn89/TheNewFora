@@ -23,9 +23,11 @@ namespace ForaForum.Server.Controllers
         }
 
         [HttpGet]
-        public ActionResult Get()
+        public async Task<ActionResult<List<ApplicationUser>>> GetAsync()
         {
-            return Ok(_context.Users.ToList());
+            List<ApplicationUser> list = new();
+            list = await _context.Users.ToListAsync();
+            return Ok(list);
         }
 
         [HttpGet("{id}")]
@@ -37,7 +39,7 @@ namespace ForaForum.Server.Controllers
 
         [HttpGet]
         [Route("getuserbyid")]
-        public ActionResult<string> GetByIdAsync([FromQuery]string id)
+        public ActionResult<string> GetById([FromQuery]string id)
         {
             var user = _context.Users.Where(x => x.Id == id).FirstOrDefault();
             if(user is not null)
@@ -52,7 +54,7 @@ namespace ForaForum.Server.Controllers
         }
         [HttpGet]
         [Route("getuserimagebyid")]
-        public ActionResult<string> GetUserImageByIdAsync([FromQuery] string id)
+        public ActionResult<string> GetUserImageById([FromQuery] string id)
         {
             var user = _context.Users.Where(x => x.Id == id).FirstOrDefault();
             if(user is not null)
@@ -67,7 +69,7 @@ namespace ForaForum.Server.Controllers
         }
         [HttpGet]
         [Route("getbanflag")]
-        public ActionResult<bool> GetBanDeletFlagAsync([FromQuery]string id)
+        public ActionResult<bool> GetBanDeletFlag([FromQuery]string id)
         {
             var user = _context.Users.Where(x => x.Id == id).FirstOrDefault();
             if(user is not null)
@@ -90,16 +92,14 @@ namespace ForaForum.Server.Controllers
         public async Task<ActionResult> PostAsync([FromBody] ApplicationUser user)
         {
             await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
-            return Ok();
+            return Ok(await _context.SaveChangesAsync());
         }
 
         [HttpPut]
         public async Task<ActionResult> PutAsync([FromBody] ApplicationUser user)
         {
             _context.Users.Update(user);
-            var result = await _context.SaveChangesAsync();
-            return result>1 ? Ok() : NotFound();
+            return Ok(await _context.SaveChangesAsync());
         }
     }
 }

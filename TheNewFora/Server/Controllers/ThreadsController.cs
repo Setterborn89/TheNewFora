@@ -24,27 +24,28 @@ namespace ForaForum.Server.Controllers
         [HttpGet]
         public async Task<ActionResult<List<ThreadModel>>> GetAsync()
         {
-            List<ThreadModel> list = await _context.Threads.ToListAsync();
+            List<ThreadModel> list = new();
+            list = await _context.Threads.ToListAsync();
             return Ok(list);
         }
-
-        [HttpGet]
-        [Route("getbyinterestid")]
-        public async Task<ActionResult> GetByInterestId([FromQuery]int id)
-        {
-            return Ok(await _context.Threads.Where(x => x.InterestId == id).ToListAsync());
-        }
-        [HttpGet]
-        [Route("getpostsbyid")]
-        public async Task<ActionResult> GetPostsByIdAsync([FromQuery]int id)
-        {
-            return Ok(await _context.Messages.Where(x => x.ThreadId == id).CountAsync());
-        } 
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ThreadModel>> GetAsync(int id)
         {
             return Ok(await _context.Threads.Where(x => x.Id == id).Include("Messages").FirstOrDefaultAsync());
+        }
+
+        [HttpGet]
+        [Route("getbyinterestid")]
+        public async Task<ActionResult> GetByInterestId([FromQuery] int id)
+        {
+            return Ok(await _context.Threads.Where(x => x.InterestId == id).ToListAsync());
+        }
+        [HttpGet]
+        [Route("getpostsbyid")]
+        public async Task<ActionResult> GetPostsByIdAsync([FromQuery] int id)
+        {
+            return Ok(await _context.Messages.Where(x => x.ThreadId == id).CountAsync());
         }
 
         [HttpPost]

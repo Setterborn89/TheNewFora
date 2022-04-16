@@ -1,8 +1,10 @@
 ﻿@page "/register"
+@using TheNewFora.Client.Services
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthStateProvider
 @inject ILocalStorageService LocalStorage
+@inject IApplicationUsersManager UserManager
 
 <h3>Register</h3>
 
@@ -10,7 +12,6 @@
 {
     <em>@error</em>
 }
-
 <EditForm Model="user" OnSubmit="HandleRegistration">
     <label for="username">Username:</label>
     <InputText id="username" @bind-Value="user.Username" placeholder="Username"></InputText>
@@ -25,7 +26,6 @@
 
     private async Task HandleRegistration()
     {
-        // Register user
         var result = await Http.PostAsJsonAsync<UserDto>("api/auth/register", user);
 
         if(result.IsSuccessStatusCode)

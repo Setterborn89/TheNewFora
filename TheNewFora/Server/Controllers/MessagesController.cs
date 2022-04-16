@@ -22,9 +22,11 @@ namespace ForaForum.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<MessageModel>>> GetAllAsync()
+        public async Task<ActionResult<List<MessageModel>>> GetAsync()
         {
-            return Ok(await _context.Messages.ToListAsync());
+            List<MessageModel> list = new();
+            list = await _context.Messages.ToListAsync();
+            return Ok(list);
         }
 
         [HttpGet("{id}")]
@@ -37,8 +39,7 @@ namespace ForaForum.Server.Controllers
         public async Task<ActionResult> PostAsync([FromBody] MessageModel message)
         {
             await _context.Messages.AddAsync(message);
-            await _context.SaveChangesAsync();
-            return Ok();
+            return Ok(await _context.SaveChangesAsync());
         }
 
         [HttpPut]
@@ -60,8 +61,7 @@ namespace ForaForum.Server.Controllers
             else
             {
                 return NotFound();
-            }
-            
+            } 
         }
     }
 }

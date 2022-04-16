@@ -24,7 +24,8 @@ namespace ForaForum.Server.Controllers
         [HttpGet]
         public async Task<ActionResult<List<InterestModel>>> GetAsync()
         {
-            List<InterestModel> list = await _context.Interests.ToListAsync();
+            List<InterestModel> list = new();
+            list = await _context.Interests.ToListAsync();
             return Ok(list);
         }
 
@@ -52,15 +53,13 @@ namespace ForaForum.Server.Controllers
             {
                 return NotFound();
             }
-            
         }
 
         [HttpPost]
         public async Task<ActionResult> PostAsync([FromBody]InterestModel interest)
         {
             await _context.Interests.AddAsync(interest);
-            await _context.SaveChangesAsync();
-            return Ok();
+            return Ok(await _context.SaveChangesAsync());
         }
 
         [HttpPut]
@@ -83,7 +82,6 @@ namespace ForaForum.Server.Controllers
             {
                 return NotFound();
             }
-            
         }
     }
 }

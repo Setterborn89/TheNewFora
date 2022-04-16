@@ -24,7 +24,8 @@ namespace ForaForum.Server.Controllers
         [HttpGet]
         public async Task<ActionResult<List<UserInterestModel>>> GetAsync([FromQuery] string id)
         {
-            List<UserInterestModel> list = await _context.UsersInterests.Where(x => x.UserId == id).ToListAsync();
+            List<UserInterestModel> list = new();
+            list = await _context.UsersInterests.Where(x => x.UserId == id).ToListAsync();
             return Ok(list);
         }
         [HttpGet]
