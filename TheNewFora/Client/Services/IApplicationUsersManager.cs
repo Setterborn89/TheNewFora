@@ -9,7 +9,6 @@ namespace TheNewFora.Client.Services
         Task<string> DeleteUserAsync(ApplicationUser user);
         Task<List<ApplicationUser>?> GetAllUsersAsync();
         Task<bool> GetBanDeleteFlagAsync(string id);
-        Task<ApplicationUser?> GetDetachedUserAsync(string id);
         Task<ApplicationUser?> GetUserAsync(string id);
         Task<string?> GetUserImageAsync(string id);
         Task<string?> GetUserNameByIdAsync(string id);

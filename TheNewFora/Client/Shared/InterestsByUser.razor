@@ -8,6 +8,11 @@
 
 @if(warning){<button class="btn-warning" @onclick="() => warning=false">@Message</button>}
 
+@if(userInterestList.Count < 1)
+{
+    <h1>Please add some interests!</h1>
+}
+
 @foreach(var item in userInterestDtoList)
 {
     <div class="card">

@@ -1,8 +1,11 @@
 ﻿@page "/login"
+@using TheNewFora.Client.Services
 @inject HttpClient Http
 @inject AuthenticationStateProvider AuthStateProvider
 @inject ILocalStorageService LocalStorage
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject IApplicationUsersManager UserManager 
 
 <h3>Login</h3>
 
@@ -31,15 +34,32 @@
         {
             var token = await result.Content.ReadAsStringAsync();
 
-            await LocalStorage.SetItemAsync("token", token);
+            if(token == "UserDeleted")
+            {
+                await ReviveAccountAsync(user.Username);
+            }
+            else
+            {
+                await LocalStorage.SetItemAsync("token", token);
 
-            await AuthStateProvider.GetAuthenticationStateAsync();
+                await AuthStateProvider.GetAuthenticationStateAsync();
 
-            NavigationManager.NavigateTo("/UserPage");
+                NavigationManager.NavigateTo("/UserPage"); 
+            }
         }
         else
         {
             error = await result.Content.ReadAsStringAsync(); 
         }
+    }
+
+    private async Task ReviveAccountAsync(string userName)
+    {
+        if (!await JSRuntime.InvokeAsync<bool>
+            ("confirm", $"Do you want to revive your account?"))
+            return;
+
+        HttpResponseMessage response = await Http.DeleteAsync($"api/auth/revive?username={userName}");
+        await HandleLogin();
     }
 }

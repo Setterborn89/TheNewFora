@@ -258,6 +258,24 @@ namespace TheNewFora.Server.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.InsertData(
+                table: "AspNetUsers",
+                columns: new[] { "Id", "AccessFailedCount", "Adminable", "Banned", "ConcurrencyStamp", "Deleted", "Email", "EmailConfirmed", "JwtToken", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PfpUrl", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
+                values: new object[] { "a18be9c0-aa65-4af8-bd17-00bd9344e575", 0, true, false, "2cb6071f-ab72-46fd-adae-0a761ae9ed50", false, null, false, "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiYWRtaW4iLCJleHAiOjE2NTA0NDM0Nzd9.ysHKU3wJR9s5jUyouh1CpCbaYYRBXdyTomNhha7xuvM", false, null, null, "ADMIN", "AQAAAAEAACcQAAAAEJVj6RrwrU51fLiG8fmIlrGW+zghk4axTTsPWo/gS6ZkUf4tybh7e0W9kr9aRyWbNA==", null, null, false, "81462b60-a313-47f0-b246-33eb41a87920", false, "admin" });
+
+            migrationBuilder.InsertData(
+                table: "Interests",
+                columns: new[] { "Id", "Name", "UserId" },
+                values: new object[,]
+                {
+                    { 1, "Dogs", "a18be9c0-aa65-4af8-bd17-00bd9344e575" },
+                    { 2, "Cats", "a18be9c0-aa65-4af8-bd17-00bd9344e575" },
+                    { 3, "Airplanes", "a18be9c0-aa65-4af8-bd17-00bd9344e575" },
+                    { 4, "Pokemon", "a18be9c0-aa65-4af8-bd17-00bd9344e575" },
+                    { 5, "Trains", "a18be9c0-aa65-4af8-bd17-00bd9344e575" },
+                    { 6, "Music", "a18be9c0-aa65-4af8-bd17-00bd9344e575" }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",

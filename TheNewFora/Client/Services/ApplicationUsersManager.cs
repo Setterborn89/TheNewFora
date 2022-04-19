@@ -41,12 +41,6 @@ namespace TheNewFora.Client.Services
             var banflag = await response.Content.ReadAsAsync<bool>();
             return response.IsSuccessStatusCode ? banflag : false;
         }
-        public async Task<ApplicationUser?> GetDetachedUserAsync(string id)
-        {
-            HttpResponseMessage response = await _client.GetAsync($"api/users/{id}");
-            var user = await response.Content.ReadAsAsync<ApplicationUser>();
-            return response.IsSuccessStatusCode ? user : null;
-        }
         public async Task<string> AddUserAsync(ApplicationUser user)
         {
             HttpResponseMessage response = await _client.PostAsJsonAsync("api/users", user);

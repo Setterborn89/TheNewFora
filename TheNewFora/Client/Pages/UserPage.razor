@@ -109,6 +109,7 @@
             </div>
             <div class="card-body">
                 <button @onclick="@DeleteUser" class="btn-primary"> Delete </button>
+                <button @onclick="@TerminateUser" class="btn-primary"> Terminate </button>
             </div>
         </div>
     }
@@ -343,6 +344,22 @@
             await AppUserManager.UpdateUserAsync(CurrentUser);
             await LocalStorage.RemoveItemAsync("token");
             await AuthStateProvider.GetAuthenticationStateAsync();
+            NavigationManager.NavigateTo("", true);
+        }
+        else
+        {
+            Message = "Fail";
+        }
+    }
+
+    public async Task TerminateUser()
+    {
+        if (!await JSRuntime.InvokeAsync<bool>
+            ("confirm", $"Are you sure you want to terminate your account?"))
+            return;
+        if (CurrentUser is not null)
+        {
+            HttpResponseMessage response = await Http.DeleteAsync($"api/auth/terminate?username={CurrentUser.UserName}");
             NavigationManager.NavigateTo("", true);
         }
         else

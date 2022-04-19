@@ -18,7 +18,7 @@ namespace ForaForum.Server.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
-        public AuthController(AuthDbContext context,IConfiguration configuration, SignInManager<ApplicationUser> signInManager, RoleManager<IdentityRole> roleManager)
+        public AuthController(AuthDbContext context, IConfiguration configuration, SignInManager<ApplicationUser> signInManager, RoleManager<IdentityRole> roleManager)
         {
             _context = context;
             _configuration = configuration;
@@ -33,12 +33,22 @@ namespace ForaForum.Server.Controllers
 
             ApplicationUser user = await _signInManager.UserManager.FindByNameAsync(request.Username);
 
+            if(user is null)
+            {
+                return NotFound();
+            }
+
             if (user.Adminable == false)
             {
                 await _signInManager.UserManager.RemoveFromRoleAsync(user,"Admin");
             }
 
-            if (await _signInManager.UserManager.CheckPasswordAsync(user, request.Password) == false || user.Banned || user.Deleted)
+            if (user.Deleted)
+            {
+                return "UserDeleted";
+            }
+
+            if (await _signInManager.UserManager.CheckPasswordAsync(user, request.Password) == false || user.Banned)
             {
                 return Unauthorized();
             }
@@ -84,12 +94,36 @@ namespace ForaForum.Server.Controllers
             }
         }
         [HttpDelete]
+        [Route("terminate")]
+        public async Task<ActionResult> TerminateUser([FromQuery]string username)
+        {
+            var user = await _signInManager.UserManager.FindByNameAsync(username);
+
+            var updateResult = await _signInManager.UserManager.DeleteAsync(user);
+
+            return updateResult.Succeeded ? Ok() : BadRequest();
+        }
+        
+        [HttpDelete]
         [Route("delete")]
         public async Task<ActionResult> DeleteUser([FromQuery]string username)
         {
             var user = await _signInManager.UserManager.FindByNameAsync(username);
 
             user.Deleted = true;
+
+            var updateResult = await _signInManager.UserManager.UpdateAsync(user);
+
+            return updateResult.Succeeded ? Ok() : BadRequest();
+        }
+
+        [HttpDelete]
+        [Route("revive")]
+        public async Task<ActionResult> ReviveUser([FromQuery]string username)
+        {
+            var user = await _signInManager.UserManager.FindByNameAsync(username);
+
+            user.Deleted = false;
 
             var updateResult = await _signInManager.UserManager.UpdateAsync(user);
 

@@ -234,6 +234,26 @@ namespace TheNewFora.Server.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "a18be9c0-aa65-4af8-bd17-00bd9344e575",
+                            AccessFailedCount = 0,
+                            Adminable = true,
+                            Banned = false,
+                            ConcurrencyStamp = "2cb6071f-ab72-46fd-adae-0a761ae9ed50",
+                            Deleted = false,
+                            EmailConfirmed = false,
+                            JwtToken = "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiYWRtaW4iLCJleHAiOjE2NTA0NDM0Nzd9.ysHKU3wJR9s5jUyouh1CpCbaYYRBXdyTomNhha7xuvM",
+                            LockoutEnabled = false,
+                            NormalizedUserName = "ADMIN",
+                            PasswordHash = "AQAAAAEAACcQAAAAEJVj6RrwrU51fLiG8fmIlrGW+zghk4axTTsPWo/gS6ZkUf4tybh7e0W9kr9aRyWbNA==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "81462b60-a313-47f0-b246-33eb41a87920",
+                            TwoFactorEnabled = false,
+                            UserName = "admin"
+                        });
                 });
 
             modelBuilder.Entity("TheNewFora.Shared.InterestModel", b =>
@@ -255,6 +275,44 @@ namespace TheNewFora.Server.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Interests");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Dogs",
+                            UserId = "a18be9c0-aa65-4af8-bd17-00bd9344e575"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Cats",
+                            UserId = "a18be9c0-aa65-4af8-bd17-00bd9344e575"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Airplanes",
+                            UserId = "a18be9c0-aa65-4af8-bd17-00bd9344e575"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Pokemon",
+                            UserId = "a18be9c0-aa65-4af8-bd17-00bd9344e575"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Trains",
+                            UserId = "a18be9c0-aa65-4af8-bd17-00bd9344e575"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Name = "Music",
+                            UserId = "a18be9c0-aa65-4af8-bd17-00bd9344e575"
+                        });
                 });
 
             modelBuilder.Entity("TheNewFora.Shared.MessageModel", b =>
